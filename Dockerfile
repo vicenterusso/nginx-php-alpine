@@ -1,6 +1,7 @@
 FROM alpine:3.15
-LABEL Maintainer="Tim de Pater <code@trafex.nl>" \
-      Description="Lightweight container with Nginx 1.18 & PHP 7.4.30 based on Alpine Linux 3.15."
+
+LABEL Maintainer="Vicente Russo Neto <vicente.russo@gmail.com>" \
+      Description="Lightweight container with Nginx 1.20.2 & PHP 7.4.30 based on Alpine Linux 3.15."
       
 # Composer - https://getcomposer.org/download/
 ARG COMPOSER_VERSION="1.10.26"
@@ -38,9 +39,7 @@ RUN apk --no-cache add \
   nginx\
   supervisor \
   tzdata \
-  curl \
-      && \
-    rm /etc/nginx/conf.d/default.conf
+  curl
 
 
 # Add Locales
@@ -67,6 +66,8 @@ RUN set -eux \
 # Configure nginx
 COPY config/nginx.conf /etc/nginx/nginx.conf
 
+RUN mkdir -p /var/www/html
+
 # Configure PHP-FPM
 COPY config/fpm-pool.conf /etc/php7/php-fpm.d/www.conf
 COPY config/php.ini /etc/php7/conf.d/custom.ini
@@ -75,26 +76,26 @@ COPY config/php.ini /etc/php7/conf.d/custom.ini
 COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Setup document root
-RUN mkdir -p /var/www/html
+RUN mkdir -p /var/www
 
-# Make sure files/folders needed by the processes are accessable when they run under the nobody user
-RUN chown -R nobody.nobody /var/www/html && \
-  chown -R nobody.nobody /run && \
-  chown -R nobody.nobody /var/lib/nginx && \
-  chown -R nobody.nobody /var/log/nginx
+# Add user for application
+#RUN adduser -SDu 1000 www www
+RUN adduser -D -g 'www' www
 
-# Switch to use a non-root user from here on
-USER nobody
+# # Make sure files/folders needed by the processes are accessable when they run under the nobody user
+RUN chown -R www:www /var/www/html && \
+  chown -R www:www /run && \
+  chown -R www:www /var/lib/nginx && \
+  chown -R www:www /var/log/nginx
 
-# Add application
 WORKDIR /var/www/html
-COPY --chown=nobody src/ /var/www/html/
 
-# Expose the port nginx is reachable on
-EXPOSE 8080
+# Change current user to www
+USER www
 
 # Let supervisord start nginx & php-fpm
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 
 # Configure a healthcheck to validate that everything is up&running
 HEALTHCHECK --timeout=10s CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping
+
