@@ -20,7 +20,7 @@ Use the following template
 version: '3'
 services:
     app:
-        image: vicenterusso/php-nginx-alpine:8
+        image: vicenterusso/php-nginx-alpine:v1
         volumes:
             - "./etc/nginx/vhosts:/etc/nginx/conf.d"
             - "./etc/ssl:/var/www/ssl"
