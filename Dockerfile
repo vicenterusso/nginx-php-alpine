@@ -2,10 +2,6 @@ FROM alpine:3.15
 
 LABEL Maintainer="Vicente Russo Neto <vicente.russo@gmail.com>" \
       Description="Lightweight container with Nginx 1.20.2 & PHP 7.4.30 based on Alpine Linux 3.15."
-      
-# Composer - https://getcomposer.org/download/
-ARG COMPOSER_VERSION="1.10.26"
-ARG COMPOSER_SUM="cbfe1f85276c57abe464d934503d935aa213494ac286275c8dfabfa91e3dbdc4"
 
 # Install packages and remove default server definition
 RUN apk --no-cache add \
@@ -52,16 +48,6 @@ RUN echo 'export LC_ALL=pt_BR.UTF-8' >> /etc/profile.d/locale.sh && \
 
 ENV LANG=pt_BR.UTF-8
 ENV LC_COLLATE=pt_BR
-
-# Install Composer
-RUN set -eux \
-    && curl -LO "https://getcomposer.org/download/${COMPOSER_VERSION}/composer.phar" \
-    && echo "${COMPOSER_SUM}  composer.phar" | sha256sum -c - \
-    && chmod +x composer.phar \
-    && mv composer.phar /usr/local/bin/composer \
-    && composer --version \
-    && true
-
 
 # Configure nginx
 COPY config/nginx.conf /etc/nginx/nginx.conf
