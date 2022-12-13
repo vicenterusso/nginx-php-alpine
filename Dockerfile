@@ -51,6 +51,8 @@ ENV LC_COLLATE=pt_BR
 
 # Configure nginx
 COPY config/nginx.conf /etc/nginx/nginx.conf
+COPY nginx-apps-conf/iceasa-api.conf /etc/nginx/conf.d/iceasa-api.conf;
+COPY nginx-apps-conf/iceasa-frontend.conf /etc/nginx/conf.d/iceasa-frontend.conf;
 
 RUN mkdir -p /var/www/html
 
